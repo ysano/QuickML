@@ -1,11 +1,11 @@
 #
 # quickml/utils - a part of quickml server
 #
-# Copyright (C) 2002-2004 Satoru Takabayashi <satoru@namazu.org> 
+# Copyright (C) 2002-2004 Satoru Takabayashi <satoru@namazu.org>
 #     All rights reserved.
 #     This is free software with ABSOLUTELY NO WARRANTY.
 #
-# You can redistribute it and/or modify it under the terms of 
+# You can redistribute it and/or modify it under the terms of
 # the GNU General Public License version 2.
 #
 $KCODE = 'e'
@@ -21,10 +21,10 @@ class IO
       c = self.read(1)
       s << c
       if s.length > max_length
-	raise TooLongLine
+        raise TooLongLine
       end
       if c == "\n"
-	return s
+        return s
       end
     end
     if s.empty? then nil else s end
@@ -59,13 +59,13 @@ end
 
 class File
   def self.safe_open (filename, mode = "r")
-    begin 
+    begin
       f = File.open(filename, mode)
       if block_given?
-	yield(f)
-	f.close
+        yield(f)
+        f.close
       else
-	return f
+        return f
       end
     rescue => e
       STDERR.printf "%s: %s\n", $0, e.message

@@ -23,8 +23,8 @@ module QuickML
     private
     def puts_log (msg)
       @mutex.synchronize {
-	time = Time.now.strftime("%Y-%m-%dT%H:%M:%S")
-	@log_file.puts "#{time}: #{msg}"
+        time = Time.now.strftime("%Y-%m-%dT%H:%M:%S")
+        @log_file.puts "#{time}: #{msg}"
       }
     end
 
@@ -39,9 +39,9 @@ module QuickML
 
     def reopen
       @mutex.synchronize {
-	log_filename = @log_file.path
-      	@log_file.close
-      	@log_file = File.safe_open(log_filename, "a")
+        log_filename = @log_file.path
+        @log_file.close
+        @log_file = File.safe_open(log_filename, "a")
       }
     end
   end

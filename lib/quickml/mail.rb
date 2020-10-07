@@ -1,11 +1,12 @@
+# coding: utf-8
 #
 # quickml/mail - a part of quickml server
 #
-# Copyright (C) 2002-2004 Satoru Takabayashi <satoru@namazu.org> 
+# Copyright (C) 2002-2004 Satoru Takabayashi <satoru@namazu.org>
 #     All rights reserved.
 #     This is free software with ABSOLUTELY NO WARRANTY.
 #
-# You can redistribute it and/or modify it under the terms of 
+# You can redistribute it and/or modify it under the terms of
 # the GNU General Public License version 2.
 #
 
@@ -22,7 +23,7 @@ module QuickML
 
     def send (message, mail_from, recipients)
       recipients = [recipients] if recipients.kind_of?(String)
-      s = TCPSocket.open(@smtp_host, @smtp_port) 
+      s = TCPSocket.open(@smtp_host, @smtp_port)
       send_command(s, nil, 220)
       send_command(s, "EHLO #{Socket.gethostname}", 250)
       if @use_xverp and @xverp_available and (not mail_from.empty?)
@@ -53,7 +54,7 @@ module QuickML
         @xverp_available = true if /^250-XVERP/.match(line)
       end while line[3] == ?-
 
-      return_code = line[0,3].to_i
+                             return_code = line[0,3].to_i
       if return_code == code
         line
       else
@@ -82,22 +83,22 @@ module QuickML
     private
     def get_content_type
       if %r!([-\w]+/[-\w]+)! =~ self["Content-Type"]
-	$1.downcase
+        $1.downcase
       else
-	nil
+        nil
       end
     end
 
     def get_charset
       if /charset=("?)([-\w]+)\1/ =~ self["Content-Type"]
-	$2.downcase
+        $2.downcase
       else
-	nil
+        nil
       end
     end
 
     def remove_comment_in_field (field)
-      field = field.toeuc
+      field = field.toutf8
       true while field.sub!(/\([^()]*?\)/, "")
       field
     end
@@ -108,21 +109,21 @@ module QuickML
       name, domain = address.split('@')
       name.gsub!(/^"(.*)"$/, '\1')
       if domain
-	name + "@" + domain.downcase
+        name + "@" + domain.downcase
       else
-	address
+        address
       end
     end
 
     def collect_address (field)
-      address_regex = 
-	/(("?)[-0-9a-zA-Z_.+?\/]+\2@[-0-9a-zA-Z]+\.[-0-9a-zA-Z.]+)/ #/
+      address_regex =
+        /(("?)[-0-9a-zA-Z_.+?\/]+\2@[-0-9a-zA-Z]+\.[-0-9a-zA-Z.]+)/ #/
       addresses = []
       parts = remove_comment_in_field(field).split(',')
       parts.each {|part|
-	if (/<(.*?)>/ =~ part) or (address_regex =~ part)
-	  addresses.push(normalize_address($1))
-	end
+        if (/<(.*?)>/ =~ part) or (address_regex =~ part)
+          addresses.push(normalize_address($1))
+        end
       }
       addresses.uniq
     end
@@ -173,7 +174,7 @@ module QuickML
 
     def each_field
       @header.each {|field|
-	yield(field.first, field.last)
+        yield(field.first, field.last)
       }
     end
 
@@ -183,27 +184,27 @@ module QuickML
 
     def from
       address = if not self["From"].empty?
-		  collect_address(self["From"]).first
-		else
-		  @mail_from
-		end
+                  collect_address(self["From"]).first
+                else
+                  @mail_from
+                end
       address = "unknown" if address.nil? or address.empty?
       normalize_address(address)
     end
 
     def collect_cc
       if self["Cc"]
-	collect_address(self["Cc"])
+        collect_address(self["Cc"])
       else
-	[]
+        []
       end
     end
 
     def collect_to
       if self["To"]
-	collect_address(self["To"])
+        collect_address(self["To"])
       else
-	[]
+        []
       end
     end
 
@@ -213,7 +214,7 @@ module QuickML
 
     def empty_body?
       return false if @body.length > 100
-      /\A[\s¡¡]*\Z/ =~ @body.toeuc # including Japanese zenkaku-space.
+      /\A[\sã€€]*\Z/ =~ @body.toutf8 # including Japanese zenkaku-space.
     end
 
     def multipart?
@@ -222,9 +223,9 @@ module QuickML
 
     def boundary
       if %r!^multipart/mixed;\s*boundary=("?)(.*)\1!i =~ self["Content-Type"]#"
-	$2
+        $2
       else
-	nil
+        nil
       end
     end
 
@@ -233,13 +234,13 @@ module QuickML
       header, body = string.split(/\n\n/, 2)
       attr = nil
       header.split("\n").each {|line|
-	line.xchomp!
-	if /^(\S+):\s*(.*)/=~ line
-	  attr = $1
-	  push_field(attr, $2)
-	elsif attr
-	  concat_field(line)
-	end
+        line.xchomp!
+        if /^(\S+):\s*(.*)/=~ line
+          attr = $1
+          push_field(attr, $2)
+        elsif attr
+          concat_field(line)
+        end
       }
       @bare = string
       @charset = get_charset
@@ -249,70 +250,69 @@ module QuickML
 
     class << self
       def send_mail (smtp_host, smtp_port, logger, optional = {})
-	mail_from = optional[:mail_from]
-	recipients = optional[:recipients]
-	header = optional[:header]
-	body = optional[:body]
+        mail_from = optional[:mail_from]
+        recipients = optional[:recipients]
+        header = optional[:header]
+        body = optional[:body]
         if optional[:recipient]
           raise unless optional[:recipient].kind_of?(String)
-          recipients = [optional[:recipient]] 
+          recipients = [optional[:recipient]]
         end
-	raise if mail_from.nil? or recipients.nil? or 
-	  body.nil? or header.nil?
+        raise if mail_from.nil? or recipients.nil? or
+          body.nil? or header.nil?
 
-	contents = ""
-	header.each {|field|
-	  key = field.first; value = field.last
-	  contents << "#{key}: #{value}\n" if key.kind_of?(String)
-	}
-	contents << "\n"
-	contents << body
-	begin
+        contents = ""
+        header.each {|field|
+          key = field.first; value = field.last
+          contents << "#{key}: #{value}\n" if key.kind_of?(String)
+        }
+        contents << "\n"
+        contents << body
+        begin
           sender = MailSender.new(smtp_host, smtp_port, true)
           sender.send(contents, mail_from, recipients)
-	rescue => e
-	  logger.log "Error: Unable to send mail: #{e.class}: #{e.message}"
-	end
+        rescue => e
+          logger.log "Error: Unable to send mail: #{e.class}: #{e.message}"
+        end
       end
 
       def address_of_domain? (address, domain)
-	domainpat = Regexp.new('[.@]' + Regexp.quote(domain) + '$',  #'
-			       Regexp::IGNORECASE)
-	if domainpat =~ address then true else false end
+        domainpat = Regexp.new('[.@]' + Regexp.quote(domain) + '$',  #'
+                               Regexp::IGNORECASE)
+        if domainpat =~ address then true else false end
       end
 
       def encode_field (field)
-	field.toeuc.gsub(/[¡¡-ô¤]\S*\s*/) {|x|
-	  x.scan(/.{1,10}/).map {|y|
-	    "=?iso-2022-jp?B?" + y.tojis.to_a.pack('m').chomp + "?="
-	  }.join("\n ")
-	}
+        field.toutf8.gsub(/[ã€€-ç‘¤]\S*\s*/) {|x|
+          x.scan(/.{1,10}/).map {|y|
+            "=?iso-2022-jp?B?" + y.tojis.to_a.pack('m').chomp + "?="
+          }.join("\n ")
+        }
       end
 
       def decode_subject (subject)
-	NKF.nkf("-e", subject.gsub(/\n\s*/, " "))
+        NKF.nkf("-e", subject.gsub(/\n\s*/, " "))
       end
 
       def clean_subject (subject)
-	subject = Mail.decode_subject(subject)
-	subject.gsub!(/(?:\[[^\]]+:\d+\])/, "")
-	subject.sub!(/(?:Re:\s*)+/i, "Re: ")
-	return subject
+        subject = Mail.decode_subject(subject)
+        subject.gsub!(/(?:\[[^\]]+:\d+\])/, "")
+        subject.sub!(/(?:Re:\s*)+/i, "Re: ")
+        return subject
       end
 
       def rewrite_subject (subject, name, count)
-	subject = Mail.clean_subject(subject)
-	subject = "[#{name}:#{count}] " + subject
-	Mail.encode_field(subject)
+        subject = Mail.clean_subject(subject)
+        subject = "[#{name}:#{count}] " + subject
+        Mail.encode_field(subject)
       end
 
       def join_parts (parts, boundary)
-	body = ""
-	body << sprintf("--%s\n", boundary)
-	body << parts.join("--#{boundary}\n")
-	body
+        body = ""
+        body << sprintf("--%s\n", boundary)
+        body << parts.join("--#{boundary}\n")
+        body
       end
     end
   end
 end
-

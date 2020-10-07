@@ -1,11 +1,11 @@
 #
 # quickml/server - a part of quickml server
 #
-# Copyright (C) 2002-2004 Satoru Takabayashi <satoru@namazu.org> 
+# Copyright (C) 2002-2004 Satoru Takabayashi <satoru@namazu.org>
 #     All rights reserved.
 #     This is free software with ABSOLUTELY NO WARRANTY.
 #
-# You can redistribute it and/or modify it under the terms of 
+# You can redistribute it and/or modify it under the terms of
 # the GNU General Public License version 2.
 #
 
@@ -35,11 +35,11 @@ module QuickML
       @logger = @config.logger
       @catalog = @config.catalog
       @data_finished = false
-      @my_hostname = if @config.port == 25 then 
-		       Socket.gethostname 
-		     else 
-		       "localhost"
-		     end
+      @my_hostname = if @config.port == 25 then
+                       Socket.gethostname
+                     else
+                       "localhost"
+                     end
       @message_charset = nil
     end
 
@@ -74,42 +74,42 @@ module QuickML
 
     def mail (mail, arg)
       if @protocol.nil?
-	@socket.puts "503 Error: send HELO/EHLO first"
-      elsif /^From:\s*<(.*)>/i =~ arg or /^From:\s*(.*)/i =~ arg 
-	mail.mail_from = $1
-	@socket.puts "250 ok"
+        @socket.puts "503 Error: send HELO/EHLO first"
+      elsif /^From:\s*<(.*)>/i =~ arg or /^From:\s*(.*)/i =~ arg
+        mail.mail_from = $1
+        @socket.puts "250 ok"
       else
-	@socket.puts "501 Syntax: MAIL FROM: <address>"
+        @socket.puts "501 Syntax: MAIL FROM: <address>"
       end
     end
 
     def rcpt (mail, arg)
       if mail.mail_from.nil?
-	@socket.puts "503 Error: need MAIL command"
+        @socket.puts "503 Error: need MAIL command"
       elsif /^To:\s*<(.*)>/i =~ arg or /^To:\s*(.*)/i =~ arg
-	address = $1
-	if Mail.address_of_domain?(address, @config.domain)
-	  mail.add_recipient(address)
-	  @socket.puts "250 ok"
-	else
-	  @socket.puts "554 <#{address}>: Recipient address rejected"
-	  @logger.vlog "Unacceptable RCPT TO:<#{address}>"
-	end
+        address = $1
+        if Mail.address_of_domain?(address, @config.domain)
+          mail.add_recipient(address)
+          @socket.puts "250 ok"
+        else
+          @socket.puts "554 <#{address}>: Recipient address rejected"
+          @logger.vlog "Unacceptable RCPT TO:<#{address}>"
+        end
       else
-	@socket.puts "501 Syntax: RCPT TO: <address>"
+        @socket.puts "501 Syntax: RCPT TO: <address>"
       end
     end
 
     def received_field
-      sprintf("from %s (%s [%s])\n" + 
-	      "	by %s (QuickML) with %s;\n" + 
-	      "	%s", 
-	      @hello_host,
-	      @peer_hostname, 
-	      @peer_address,
-	      @my_hostname,
-	      @protocol,
-	      Time.now.rfc2822)
+      sprintf("from %s (%s [%s])\n" +
+              "        by %s (QuickML) with %s;\n" +
+              "        %s",
+              @hello_host,
+              @peer_hostname,
+              @peer_address,
+              @my_hostname,
+              @protocol,
+              Time.now.rfc2822)
     end
 
     def end_of_data? (line)
@@ -121,18 +121,18 @@ module QuickML
       len = 0
       lines = []
       while line = @socket.safe_gets
-	break if end_of_data?(line)
-	len += line.length
-	if len > @config.max_mail_length
-	  mail.read(lines.join('')) # Generate a header for an error report.
-	  raise TooLargeMail 
-	end
-	line.sub!(/^\.\./, ".") # unescape
-	line.normalize_eol!
-	lines << line
-	# I don't know why but constructing mail_string with
-	# String#<< here is very slow.
-	# mail_string << line  
+        break if end_of_data?(line)
+        len += line.length
+        if len > @config.max_mail_length
+          mail.read(lines.join('')) # Generate a header for an error report.
+          raise TooLargeMail
+        end
+        line.sub!(/^\.\./, ".") # unescape
+        line.normalize_eol!
+        lines << line
+        # I don't know why but constructing mail_string with
+        # String#<< here is very slow.
+        # mail_string << line
       end
       mail_string = lines.join('')
       @data_finished = true
@@ -142,26 +142,26 @@ module QuickML
 
     def data (mail, arg)
       if mail.recipients.empty?
-	@socket.puts "503 Error: need RCPT command"
+        @socket.puts "503 Error: need RCPT command"
       else
-	@socket.puts "354 send the mail data, end with .";
-	begin
-	  read_mail(mail)
-	ensure
-	  @message_charset = mail.charset
-	end
-	@socket.puts "250 ok"
+        @socket.puts "354 send the mail data, end with .";
+        begin
+          read_mail(mail)
+        ensure
+          @message_charset = mail.charset
+        end
+        @socket.puts "250 ok"
       end
     end
 
     def connect
       def @socket.puts(*objs)
-	objs.each {|x|
-	  begin
-	    self.print x.xchomp, "\r\n"
-	  rescue Errno::EPIPE
-	  end
-	}
+        objs.each {|x|
+          begin
+            self.print x.xchomp, "\r\n"
+          rescue Errno::EPIPE
+          end
+        }
       end
       @socket.puts "220 #{@my_hostname} ESMTP QuickML"
       @logger.vlog "Connect: #{@remote_host}"
@@ -169,17 +169,17 @@ module QuickML
 
     def discard_data
       begin
-	while line = @socket.safe_gets
-	  break if end_of_data?(line)
-	end
+        while line = @socket.safe_gets
+          break if end_of_data?(line)
+        end
       rescue TooLongLine
-	retry
+        retry
       end
     end
 
     def cleanup_connection
       unless @data_finished
-	discard_data
+        discard_data
       end
       @socket.puts "221 Bye"
       close
@@ -188,7 +188,7 @@ module QuickML
     # FIXME: this is the same method of QuickML#content_type
     def content_type
       if @message_charset
-        @config.content_type + "; charset=#{@message_charset}" 
+        @config.content_type + "; charset=#{@message_charset}"
       else
         @config.content_type
       end
@@ -197,9 +197,9 @@ module QuickML
     def report_too_large_mail (mail)
       header = []
       subject = Mail.encode_field(_("[QuickML] Error: %s", mail["Subject"]))
-      header.push(["To",	mail.from],
-		  ["From",	@config.postmaster],
-		  ["Subject",	subject],
+      header.push(["To",        mail.from],
+                  ["From",        @config.postmaster],
+                  ["Subject",        subject],
                   ["Content-Type", content_type])
 
       max  = @config.max_mail_length.commify
@@ -211,10 +211,10 @@ module QuickML
       body << "From: #{mail['From']}\n"
       body << "Date: #{mail['Date']}\n"
       Mail.send_mail(@config.smtp_host, @config.smtp_port, @logger,
-		     :mail_from => '', 
-		     :recipient => mail.from,
-		     :header => header,
-		     :body => body)
+                     :mail_from => '',
+                     :recipient => mail.from,
+                     :header => header,
+                     :body => body)
     end
 
     def close
@@ -225,50 +225,50 @@ module QuickML
 
     def receive_mail (mail)
       while line = @socket.safe_gets
-	line.xchomp!
-	command, arg = line.split(/\s+/, 2)
-	command = command.downcase.intern  # "HELO" => :helo
-	if @command_table.include?(command)
-	  @logger.vlog "Command: #{line}"
-	  send(command, mail, arg)
-	else
-	  @logger.vlog "Unknown SMTP Command: #{command} #{arg}"
-	  @socket.puts "502 Error: command not implemented"
-	end
-	break if command == :quit or command == :data
+        line.xchomp!
+        command, arg = line.split(/\s+/, 2)
+        command = command.downcase.intern  # "HELO" => :helo
+        if @command_table.include?(command)
+          @logger.vlog "Command: #{line}"
+          send(command, mail, arg)
+        else
+          @logger.vlog "Unknown SMTP Command: #{command} #{arg}"
+          @socket.puts "502 Error: command not implemented"
+        end
+        break if command == :quit or command == :data
       end
     end
 
     def process
       until @socket.closed?
-	begin
-	  mail = Mail.new
-	  receive_mail(mail)
-	  if mail.valid?
-	    processor = Processor.new(@config, mail)
-	    processor.process
-	  end
-	rescue TooLargeMail
-	  cleanup_connection
-	  report_too_large_mail(mail) if mail.valid?
-	  @logger.log "Too Large Mail: #{mail.from}"
-	rescue TooLongLine
-	  cleanup_connection
-	  @logger.log "Too Long Line: #{mail.from}"
-	end
+        begin
+          mail = Mail.new
+          receive_mail(mail)
+          if mail.valid?
+            processor = Processor.new(@config, mail)
+            processor.process
+          end
+        rescue TooLargeMail
+          cleanup_connection
+          report_too_large_mail(mail) if mail.valid?
+          @logger.log "Too Large Mail: #{mail.from}"
+        rescue TooLongLine
+          cleanup_connection
+          @logger.log "Too Long Line: #{mail.from}"
+        end
       end
     end
 
     def _start
       begin
-	connect
-	timeout(@config.timeout) {
-	  process
-	}
+        connect
+        timeout(@config.timeout) {
+          process
+        }
       rescue TimeoutError
-	@logger.vlog "Timeout: #{@remote_host}"
+        @logger.vlog "Timeout: #{@remote_host}"
       ensure
-	close
+        close
       end
     end
 
@@ -293,43 +293,43 @@ module QuickML
       running_sessions = []
       @status = :running
       while @status == :running
-	begin 
-	  t = Thread.new(@server.accept) {|s|
-	    process_session(s)
-	  }
-	  t.abort_on_exception = true
-	  running_sessions.push(t)
-	rescue Errno::ECONNABORTED # caused by @server.shutdown
-	rescue Errno::EINVAL
-	end
-	running_sessions.delete_if {|t| t.status == false }
-	if running_sessions.length >= @config.max_threads
-	  ThreadsWait.new(running_sessions).next_wait
-	end
+        begin
+          t = Thread.new(@server.accept) {|s|
+            process_session(s)
+          }
+          t.abort_on_exception = true
+          running_sessions.push(t)
+        rescue Errno::ECONNABORTED # caused by @server.shutdown
+        rescue Errno::EINVAL
+        end
+        running_sessions.delete_if {|t| t.status == false }
+        if running_sessions.length >= @config.max_threads
+          ThreadsWait.new(running_sessions).next_wait
+        end
       end
       running_sessions.each {|t| t.join }
     end
 
     def process_session (socket)
       begin
-	session = Session.new(@config, socket)
-	session.start
+        session = Session.new(@config, socket)
+        session.start
       rescue Exception => e
-	@logger.log "Unknown Session Error: #{e.class}: #{e.message}"
-	@logger.log e.backtrace
+        @logger.log "Unknown Session Error: #{e.class}: #{e.message}"
+        @logger.log e.backtrace
       end
     end
 
     def write_pid_file
       File.safe_open(@config.pid_file, "w") {|f|
-	f.puts Process.pid
+        f.puts Process.pid
       }
     end
 
     def read_pid_file
       pid = nil
       File.safe_open(@config.pid_file, "r") {|f|
-	pid = f.gets.chomp.to_i
+        pid = f.gets.chomp.to_i
       }
       pid
     end

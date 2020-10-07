@@ -1,11 +1,11 @@
 #
 # quickml/config - a part of quickml server
 #
-# Copyright (C) 2002-2004 Satoru Takabayashi <satoru@namazu.org> 
+# Copyright (C) 2002-2004 Satoru Takabayashi <satoru@namazu.org>
 #     All rights reserved.
 #     This is free software with ABSOLUTELY NO WARRANTY.
 #
-# You can redistribute it and/or modify it under the terms of 
+# You can redistribute it and/or modify it under the terms of
 # the GNU General Public License version 2.
 #
 
@@ -45,10 +45,10 @@ module QuickML
       @logger = Logger.new(@log_file, verbose_mode)
       @ml_mutexes = Hash.new
       @catalog = if config[:message_catalog]
-		   GetText::Catalog.new(config[:message_catalog]) 
-		 else
-		   nil
-		 end
+                   GetText::Catalog.new(config[:message_catalog])
+                 else
+                   nil
+                 end
 
       @port = (config[:port] or 25)
       @bind_address = (config[:bind_address] or "0.0.0.0")
@@ -62,13 +62,13 @@ module QuickML
       @confirm_ml_creation = (config[:confirm_ml_creation] or false)
 
       instance_variables.each {|name|
-	self.class.class_eval { attr_reader name.delete('@') }
+        self.class.class_eval { attr_reader name.delete('@') }
       }
     end
 
     def ml_mutex (address)
       @ml_mutexes.fetch(address) {|x|
-	@ml_mutexes[x] = Mutex.new
+        @ml_mutexes[x] = Mutex.new
       }
     end
 

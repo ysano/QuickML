@@ -1,11 +1,12 @@
+# coding: utf-8
 #
 # quickml/core - a part of quickml server
 #
-# Copyright (C) 2002-2004 Satoru Takabayashi <satoru@namazu.org> 
+# Copyright (C) 2002-2004 Satoru Takabayashi <satoru@namazu.org>
 #     All rights reserved.
 #     This is free software with ABSOLUTELY NO WARRANTY.
 #
-# You can redistribute it and/or modify it under the terms of 
+# You can redistribute it and/or modify it under the terms of
 # the GNU General Public License version 2.
 #
 $KCODE='e'
@@ -22,10 +23,10 @@ module QuickML
   # address case-insensitively for member management.
   class IcaseArray < Array
     def include? (item)
-      if self.find {|x| x.downcase == item.downcase } 
-	true
+      if self.find {|x| x.downcase == item.downcase }
+        true
       else
-	false
+        false
       end
     end
 
@@ -45,11 +46,11 @@ module QuickML
 
     def [] (key)
       super(key.downcase)
-    end	
+    end
 
     def []= (key, value)
       super(key.downcase, value)
-    end	
+    end
   end
 
   class ErrorInfo
@@ -86,10 +87,10 @@ module QuickML
       @charset_file = File.join(@config.data_dir, @name + ",charset")
       @ml_config_file = File.join(@config.data_dir, @name + ",config")
 
-      @waiting_members_file = File.join(@config.data_dir, @name + 
-                                        ",waiting-members")
-      @waiting_message_file = File.join(@config.data_dir, @name + 
-                                        ",waiting-message")
+      @waiting_members_file = File.join(@config.data_dir, @name +
+                                                          ",waiting-members")
+      @waiting_message_file = File.join(@config.data_dir, @name +
+                                                          ",waiting-message")
       @member_added_p = false
       @added_members = []
 
@@ -127,22 +128,22 @@ module QuickML
         }
       rescue Exception
       end
-      @max_members            = (ml_config[:max_members] or 
+      @max_members            = (ml_config[:max_members] or
                                  @config.max_members)
-      @max_mail_length        = (ml_config[:max_mail_length] or 
+      @max_mail_length        = (ml_config[:max_mail_length] or
                                  @config.max_ml_mail_length or
                                  @config.max_mail_length)
-      @ml_life_time           = (ml_config[:ml_life_time] or 
+      @ml_life_time           = (ml_config[:ml_life_time] or
                                  @config.ml_life_time)
-      @ml_alert_time          = (ml_config[:ml_alert_time] or 
+      @ml_alert_time          = (ml_config[:ml_alert_time] or
                                  @config.ml_alert_time)
-      @auto_unsubscribe_count = (ml_config[:auto_unsubscribe_count] or 
+      @auto_unsubscribe_count = (ml_config[:auto_unsubscribe_count] or
                                  @config.auto_unsubscribe_count)
       write_ml_config
     end
 
     def confirmation_address
-      sprintf("confirm+%d+%s", 
+      sprintf("confirm+%d+%s",
               File.mtime(@waiting_message_file).to_i,
               @address)
     end
@@ -152,19 +153,19 @@ module QuickML
       raise unless @short_name
       domain_part = @address.split("@").last
       if @config.use_qmail_verp
-	# e.g. <foo=return=@quickml.com-@[]>
-	@short_name + "=return=" + "@" + domain_part + "-@[]"
+        # e.g. <foo=return=@quickml.com-@[]>
+        @short_name + "=return=" + "@" + domain_part + "-@[]"
       else
-	# e.g. <foo=return@quickml.com>
-	@short_name + "=return" + "@" + domain_part
+        # e.g. <foo=return@quickml.com>
+        @short_name + "=return" + "@" + domain_part
       end
     end
 
     def last_article_time
-      if File.file?(@count_file)  then 
-	File.mtime(@count_file) 
-      else 
-	Time.now 
+      if File.file?(@count_file)  then
+        File.mtime(@count_file)
+      else
+        Time.now
       end
     end
 
@@ -172,17 +173,17 @@ module QuickML
       raise InvalidMLName if /@.*@/ =~ address
       name, host = address.split("@")
       if host.nil?
-	return name
+        return name
       else
-	fqdn = host.downcase
-	domainpat = Regexp.new('^(.*)' + 
-			       Regexp.quote("." + @config.domain) + '$') #'
-	if domainpat =~ fqdn 
-	  subdomain = $1
-	  return name + "@" + subdomain
-	else 
-	  return name
-	end
+        fqdn = host.downcase
+        domainpat = Regexp.new('^(.*)' +
+                               Regexp.quote("." + @config.domain) + '$') #'
+        if domainpat =~ fqdn
+          subdomain = $1
+          return name + "@" + subdomain
+        else
+          return name
+        end
       end
     end
 
@@ -190,14 +191,14 @@ module QuickML
       @count = 0
       return unless File.exist?(@count_file)
       File.safe_open(@count_file, "r") {|f|
-	@count = f.gets.chomp.to_i
+        @count = f.gets.chomp.to_i
       }
     end
 
     def inc_count
       @count += 1
       File.safe_open(@count_file, "w") {|f|
-	f.puts @count
+        f.puts @count
       }
     end
 
@@ -205,14 +206,14 @@ module QuickML
       @charset = nil
       return unless File.exist?(@charset_file)
       File.safe_open(@charset_file, "r") {|f|
-	@charset = f.gets.chomp
+        @charset = f.gets.chomp
       }
     end
 
     def save_charset
       return if @message_charset.nil?
       File.safe_open(@charset_file, "w") {|f|
-	f.puts @message_charset
+        f.puts @message_charset
       }
     end
 
@@ -222,30 +223,30 @@ module QuickML
       @error_members  = IcaseHash.new
       return unless File.exist?(@members_file)
       File.safe_open(@members_file, "r") {|f|
-	f.each {|line| 
-	  line.chomp!
-	  if /^# (.*)/ =~ line  # removed address
-	    @former_members.push($1) unless @former_members.include?($1)
-	  elsif /^; (.*?) (\d+)(?: (\d+))?/ =~ line
-	    address = $1
-	    count= $2.to_i
-	    last_error_time = if $3 then Time.at($3.to_i) else Time.at(0) end
-	    @error_members[address]= ErrorInfo.new(count, last_error_time)
-	  else
-	    @active_members.push(line) unless @active_members.include?(line)
-	  end
-	}
+        f.each {|line|
+          line.chomp!
+          if /^# (.*)/ =~ line  # removed address
+            @former_members.push($1) unless @former_members.include?($1)
+          elsif /^; (.*?) (\d+)(?: (\d+))?/ =~ line
+            address = $1
+            count= $2.to_i
+            last_error_time = if $3 then Time.at($3.to_i) else Time.at(0) end
+            @error_members[address]= ErrorInfo.new(count, last_error_time)
+          else
+            @active_members.push(line) unless @active_members.include?(line)
+          end
+        }
       }
     end
 
     def save_member_file
       File.safe_open(@members_file, "w") {|f|
-	@active_members.each {|address| f.puts address}
-	@former_members.each {|address| f.puts "# " + address}
-	@error_members.each {|address, error_info| 
-	  f.printf("; %s %d %d\n", 
-		   address, error_info.count, error_info.last_error_time.to_i)
-	}
+        @active_members.each {|address| f.puts address}
+        @former_members.each {|address| f.puts "# " + address}
+        @error_members.each {|address, error_info|
+          f.printf("; %s %d %d\n",
+                   address, error_info.count, error_info.last_error_time.to_i)
+        }
       }
     end
 
@@ -255,8 +256,8 @@ module QuickML
     end
 
     def member_list
-      _("Members of <%s>:\n", @address) + 
-	@active_members.map {|x| obfuscate_address(x)}.join("\n") + "\n"
+      _("Members of <%s>:\n", @address) +
+        @active_members.map {|x| obfuscate_address(x)}.join("\n") + "\n"
     end
 
     def unsubscribe_info
@@ -271,7 +272,7 @@ module QuickML
     def generate_header
       header  = sprintf("ML: %s\n", @address)
       @added_members.each {|address|
-	header << _("New Member: %s\n", obfuscate_address(address))
+        header << _("New Member: %s\n", obfuscate_address(address))
       }
       header << "\n"
       header
@@ -282,15 +283,15 @@ module QuickML
     end
 
     def generate_footer (member_list_p = false)
-      footer = "\n--\n" + "ML: #{@address}\n" + 
-	_("Info: %s\n", @config.info_url)
+      footer = "\n--\n" + "ML: #{@address}\n" +
+               _("Info: %s\n", @config.info_url)
       footer << unsubscribe_info if member_added?
       footer << "\n" + member_list if member_added? or member_list_p
       footer
     end
 
     def plain_text_body? (mail)
-      (mail["Content-Type"] == "" or 
+      (mail["Content-Type"] == "" or
        %r!\btext/plain\b!i =~ mail["Content-Type"]) and
         (mail["Content-Transfer-Encoding"] == "" or
          /^[78]bit$/i =~ mail["Content-Transfer-Encoding"])
@@ -300,20 +301,20 @@ module QuickML
       header = generate_header if @member_added_p
       footer = generate_footer
       if mail.multipart?
-	parts = mail.parts
-	sub_mail = Mail.new
-	sub_mail.read(parts.first)
-	if sub_mail.content_type == "text/plain"
-	  sub_mail.body = header + sub_mail.body if header
-	  sub_mail.body = sub_mail.body + footer
-	end
-	parts[0] = sub_mail.to_s
-	mail.body = Mail.join_parts(parts, mail.boundary)
+        parts = mail.parts
+        sub_mail = Mail.new
+        sub_mail.read(parts.first)
+        if sub_mail.content_type == "text/plain"
+          sub_mail.body = header + sub_mail.body if header
+          sub_mail.body = sub_mail.body + footer
+        end
+        parts[0] = sub_mail.to_s
+        mail.body = Mail.join_parts(parts, mail.boundary)
       elsif plain_text_body?(mail)
-	mail.body = header + mail.body if header
-	mail.body += footer
+        mail.body = header + mail.body if header
+        mail.body += footer
       else
-	mail.body
+        mail.body
       end
     end
 
@@ -330,27 +331,27 @@ module QuickML
       body = rewrite_body(mail)
       header = []
       mail.each_field {|key, value|
-	k = key.downcase
-	next if k == "subject" or k == "reply-to"
-	header.push([key, value])
+        k = key.downcase
+        next if k == "subject" or k == "reply-to"
+        header.push([key, value])
       }
-      header.push(["Subject",	subject],
-		  ["Reply-To",	@address],
-		  ["X-Mail-Count",@count])
+      header.push(["Subject",        subject],
+                  ["Reply-To",        @address],
+                  ["X-Mail-Count",@count])
       header.concat(quickml_fields)
       Mail.send_mail(@config.smtp_host, @config.smtp_port, @logger,
-		     :mail_from => @return_address, 
-		     :recipients => @active_members,
-		     :header => header,
-		     :body => body)
+                     :mail_from => @return_address,
+                     :recipients => @active_members,
+                     :header => header,
+                     :body => body)
     end
 
     def quickml_fields
       [ ["Precedence",   "bulk"],
         ["X-ML-Address", @address],
-	["X-ML-Name",	 @name],
-	["X-ML-Info",	 @config.info_url],
-	["X-QuickML",	 "true"]]
+        ["X-ML-Name",         @name],
+        ["X-ML-Info",         @config.info_url],
+        ["X-QuickML",         "true"]]
     end
 
     def remove_error_member (address)
@@ -359,9 +360,9 @@ module QuickML
 
     def error_count (address)
       if @error_members.include?(address)
-	@error_members[address].count
+        @error_members[address].count
       else
-	0
+        0
       end
     end
 
@@ -373,10 +374,10 @@ module QuickML
 
     def inc_error_count (address)
       unless @error_members.include?(address)
-	@error_members[address] = ErrorInfo.new
+        @error_members[address] = ErrorInfo.new
       end
       unless allowable_error_interval?(@error_members[address].last_error_time)
-	@error_members[address].inc_count
+        @error_members[address].inc_count
       end
       @error_members[address].count
     end
@@ -390,7 +391,7 @@ module QuickML
 
     def content_type
       if @message_charset
-        @config.content_type + "; charset=#{@message_charset}" 
+        @config.content_type + "; charset=#{@message_charset}"
       else
         @config.content_type
       end
@@ -408,33 +409,33 @@ module QuickML
 
     def write_ml_config
       File.safe_open(@ml_config_file, "w") {|f|
-	f.puts "{"
-	f.printf("  :%s => %d,\n", :max_members,     @max_members)
-	f.printf("  :%s => %d,\n", :max_mail_length, @max_mail_length)
-	f.printf("  :%s => %d,\n", :ml_life_time,    @ml_life_time)
-	f.printf("  :%s => %d,\n", :ml_alert_time,   @ml_alert_time)
-	f.printf("  :%s => %d,\n", :auto_unsubscribe_count, 
+        f.puts "{"
+        f.printf("  :%s => %d,\n", :max_members,     @max_members)
+        f.printf("  :%s => %d,\n", :max_mail_length, @max_mail_length)
+        f.printf("  :%s => %d,\n", :ml_life_time,    @ml_life_time)
+        f.printf("  :%s => %d,\n", :ml_alert_time,   @ml_alert_time)
+        f.printf("  :%s => %d,\n", :auto_unsubscribe_count,
                  @auto_unsubscribe_count)
-	f.puts "}"
+        f.puts "}"
       }
     end
 
     def send_confirmation (creator_address)
       header = []
       subject = Mail.encode_field(_("[%s] Confirmation: %s",
-				    @short_name, @address))
-      header.push(["To",	creator_address],
-		  ["From",	confirmation_address],
-		  ["Subject",	subject],
+                                    @short_name, @address))
+      header.push(["To",        creator_address],
+                  ["From",        confirmation_address],
+                  ["Subject",        subject],
                   ["Content-Type", content_type])
 
       body = _("Please simply reply this mail to create ML <%s>.\n",
                @address)
-      Mail.send_mail(@config.smtp_host, @config.smtp_port, @logger, 
-		     :mail_from => '', 
-		     :recipient => creator_address,
-		     :header => header,
-		     :body => body)
+      Mail.send_mail(@config.smtp_host, @config.smtp_port, @logger,
+                     :mail_from => '',
+                     :recipient => creator_address,
+                     :header => header,
+                     :body => body)
       @logger.log "[#{@name}]: Send confirmation: #{confirmation_address} #{creator_address}"
     end
 
@@ -444,7 +445,7 @@ module QuickML
       if mail.body.length > @max_mail_length
         report_too_large_mail(mail)
         @logger.log "[#{@name}]: Too Large Mail: #{mail.from}"
-      else 
+      else
         reset_error_member(mail.from)
         start_time = Time.now
         _submit(mail)
@@ -469,10 +470,10 @@ module QuickML
     def report_too_large_mail (mail)
       header = []
       subject = Mail.encode_field(_("[QuickML] Error: %s", mail["Subject"]))
-      header.push(["To",	mail.from],
-		  ["From",	@address],
-		  ["Subject",	subject],
-		  ["Content-Type", content_type])
+      header.push(["To",        mail.from],
+                  ["From",        @address],
+                  ["Subject",        subject],
+                  ["Content-Type", content_type])
       max  = @max_mail_length.commify
       body =   _("Sorry, your mail exceeds the limitation of the length.\n")
       body <<  _("The max length is %s bytes.\n\n", max)
@@ -482,48 +483,48 @@ module QuickML
       body << "From: #{mail['From']}\n"
       body << "Date: #{mail['Date']}\n"
       Mail.send_mail(@config.smtp_host, @config.smtp_port, @logger,
-		     :mail_from => '', 
-		     :recipient => mail.from,
-		     :header => header,
-		     :body => body)
+                     :mail_from => '',
+                     :recipient => mail.from,
+                     :header => header,
+                     :body => body)
     end
 
     def report_removed_member (error_address)
       return if @active_members.empty?
-      subject = Mail.encode_field(_("[%s] Removed: <%s>", 
-				    @short_name, error_address))
+      subject = Mail.encode_field(_("[%s] Removed: <%s>",
+                                    @short_name, error_address))
       header = []
-      header.push(["To",	@address],
-		  ["From",	@address],
-		  ["Subject",	subject],
-		  ["Reply-To",	@address],
-		  ["Content-Type", content_type])
+      header.push(["To",        @address],
+                  ["From",        @address],
+                  ["Subject",        subject],
+                  ["Reply-To",        @address],
+                  ["Content-Type", content_type])
       header.concat(quickml_fields)
 
-      body =  _("<%s> was removed from the mailing list:\n<%s>\n", 
-		error_address, @address)
+      body =  _("<%s> was removed from the mailing list:\n<%s>\n",
+                error_address, @address)
       body << _("because the address was unreachable.\n")
       body << generate_footer(true)
 
-      Mail.send_mail(@config.smtp_host, @config.smtp_port, @logger, 
-		     :mail_from => '', 
-		     :recipients => @active_members,
-		     :header => header,
-		     :body => body)
+      Mail.send_mail(@config.smtp_host, @config.smtp_port, @logger,
+                     :mail_from => '',
+                     :recipients => @active_members,
+                     :header => header,
+                     :body => body)
       @logger.log "[#{@name}]: Notify: Remove #{error_address}"
     end
 
     def report_ml_close_soon
       return if @active_members.empty?
-      subject = Mail.encode_field(_("[%s] ML will be closed soon", 
-				    @short_name))
+      subject = Mail.encode_field(_("[%s] ML will be closed soon",
+                                    @short_name))
 
       header = []
-      header.push(["To",	@address],
-		  ["From",	@address],
-		  ["Subject",	subject],
-		  ["Reply-To",	@address],
-		  ["Content-Type", content_type])
+      header.push(["To",        @address],
+                  ["From",        @address],
+                  ["Subject",        subject],
+                  ["Reply-To",        @address],
+                  ["Content-Type", content_type])
       header.concat(quickml_fields)
 
       time_to_close = last_article_time + @ml_life_time
@@ -531,15 +532,15 @@ module QuickML
       datefmt = __("%Y-%m-%d %H:%M")
 
       body =  _("ML will be closed if no article is posted for %d days.\n\n",
-		ndays)
+                ndays)
       body << _("Time to close: %s.\n\n", time_to_close.strftime(datefmt))
       body << generate_footer(true)
 
       Mail.send_mail(@config.smtp_host, @config.smtp_port, @logger,
-		     :mail_from => '', 
-		     :recipients => @active_members,
-		     :header => header,
-		     :body => body)
+                     :mail_from => '',
+                     :recipients => @active_members,
+                     :header => header,
+                     :body => body)
       @logger.log "[#{@name}]: Alert: ML will be closed soon"
       File.safe_open(@alertedp_file, "w").close
     end
@@ -580,7 +581,7 @@ module QuickML
     end
 
     def validate_confirmation (time)
-      File.exist?(@waiting_message_file) and 
+      File.exist?(@waiting_message_file) and
         File.mtime(@waiting_message_file).to_i == time.to_i
     end
 
@@ -588,15 +589,15 @@ module QuickML
       save_member_file # to create empty ML files.
       File.safe_open(@waiting_message_file, "w") {|f| f.print(mail.bare) }
       add_waiting_member(mail.from)
-      mail.collect_cc.each {|address| 
+      mail.collect_cc.each {|address|
         add_waiting_member(address)
       }
       send_confirmation(mail.from)
     end
 
     def accept_confirmation
-      waiting_members = 
-	File.safe_open(@waiting_members_file).readlines.map {|line| 
+      waiting_members =
+        File.safe_open(@waiting_members_file).readlines.map {|line|
         line.chomp
       }
       waiting_message = File.safe_open(@waiting_message_file).read
@@ -637,8 +638,8 @@ module QuickML
 
     def add_member (address)
       if exclude?(address)
-	@logger.vlog "Excluded: #{address}"
-	return
+        @logger.vlog "Excluded: #{address}"
+        return
       end
       return if @active_members.include?(address)
       raise TooManyMembers if too_many_members?
@@ -655,15 +656,15 @@ module QuickML
       prev_count = error_count(address)
       count = inc_error_count(address)
       if prev_count == count
-	@logger.log "[#{@name}]: AddError: #{address} (not counted)"
+        @logger.log "[#{@name}]: AddError: #{address} (not counted)"
       else
-	@logger.log "[#{@name}]: AddError: #{address} #{count}"
+        @logger.log "[#{@name}]: AddError: #{address} #{count}"
       end
       save_member_file
 
       if error_count(address) >= @auto_unsubscribe_count
-	remove_member(address)
-	report_removed_member(address)
+        remove_member(address)
+        report_removed_member(address)
       end
     end
   end
@@ -684,14 +685,14 @@ module QuickML
     public
     def handle (mail)
       if /^(.*)=return=(.*?)@(.*?)$/ =~ mail.recipients.first
-	mladdress = $1 + '@' + $3
-	error_address = $2.sub(/=/, "@")
- 	@config.ml_mutex(mladdress).synchronize {
-	  ml = QuickML.new(@config, mladdress, nil, @message_charset)
- 	  handle_error(ml, error_address)
- 	}
+        mladdress = $1 + '@' + $3
+        error_address = $2.sub(/=/, "@")
+        @config.ml_mutex(mladdress).synchronize {
+          ml = QuickML.new(@config, mladdress, nil, @message_charset)
+          handle_error(ml, error_address)
+        }
       else
-	@logger.vlog "Error: Use Postfix with XVERP to handle an error mail!"
+        @logger.vlog "Error: Use Postfix with XVERP to handle an error mail!"
       end
     end
   end
@@ -705,11 +706,11 @@ module QuickML
       @logger = @config.logger
       @catalog = @config.catalog
       if mail.multipart?
-	sub_mail = Mail.new
-	sub_mail.read(mail.parts.first)
-	@message_charset = sub_mail.charset
+        sub_mail = Mail.new
+        sub_mail.read(mail.parts.first)
+        @message_charset = sub_mail.charset
       else
-	@message_charset = mail.charset
+        @message_charset = mail.charset
       end
     end
 
@@ -718,7 +719,7 @@ module QuickML
     # FIXME: this is the same method of QuickML#content_type
     def content_type
       if @message_charset
-        @config.content_type + "; charset=#{@message_charset}" 
+        @config.content_type + "; charset=#{@message_charset}"
       else
         @config.content_type
       end
@@ -731,12 +732,12 @@ module QuickML
     def report_rejection (ml)
       header = []
       subject = Mail.encode_field(_("[QuickML] Error: %s", @mail["Subject"]))
-      header.push(["To",	@mail.from],
-		  ["From",	ml.address],
-		  ["Subject",	subject])
+      header.push(["To",        @mail.from],
+                  ["From",        ml.address],
+                  ["Subject",        subject])
 
       body =  _("You are not a member of the mailing list:\n<%s>\n",
-		ml.address)
+                ml.address)
       body << "\n"
       body <<  _("Did you send a mail with a different address from the address registered in the mailing list?\n")
       body <<  _("Please check your 'From:' address.\n")
@@ -751,8 +752,8 @@ module QuickML
       body << "Date: #{@mail['Date']}\n"
       body << "\n"
       if @mail.multipart?
-        ["Content-Type", "Mime-Version", 
-          "Content-Transfer-Encoding"].each {|key|
+        ["Content-Type", "Mime-Version",
+         "Content-Transfer-Encoding"].each {|key|
           header.push([key, @mail[key]]) unless @mail[key].empty?
         }
         sub_mail = Mail.new
@@ -764,55 +765,55 @@ module QuickML
         body = Mail.join_parts(parts, @mail.boundary)
       else
         unless @mail["Content-type"].empty?
-          header.push(["Content-Type", @mail["Content-type"]]) 
+          header.push(["Content-Type", @mail["Content-type"]])
         end
         body << @mail.body
       end
 
       Mail.send_mail(@config.smtp_host, @config.smtp_port, @logger,
-		     :mail_from => '', 
-		     :recipient => @mail.from,
-		     :header => header,
-		     :body => body)
+                     :mail_from => '',
+                     :recipient => @mail.from,
+                     :header => header,
+                     :body => body)
       @logger.log "[#{ml.name}]: Reject: #{@mail.from}"
     end
 
     def report_unsubscription (ml, member, requested_by = nil)
       header = []
       subject = Mail.encode_field(_("[%s] Unsubscribe: %s",
-				    ml.short_name, ml.address))
-      header.push(["To",	member],
-		  ["From",	ml.address],
-		  ["Subject",	subject],
+                                    ml.short_name, ml.address))
+      header.push(["To",        member],
+                  ["From",        ml.address],
+                  ["Subject",        subject],
                   ["Content-type", content_type])
 
       if requested_by
-	body =  _("You are removed from the mailing list:\n<%s>\n",
-		  ml.address)
-	body << _("by the request of <%s>.\n", requested_by)
+        body =  _("You are removed from the mailing list:\n<%s>\n",
+                  ml.address)
+        body << _("by the request of <%s>.\n", requested_by)
       else
-	body = _("You have unsubscribed from the mailing list:\n<%s>.\n", 
-		 ml.address)
+        body = _("You have unsubscribed from the mailing list:\n<%s>.\n",
+                 ml.address)
       end
       body << generate_footer
       Mail.send_mail(@config.smtp_host, @config.smtp_port, @logger,
-		     :mail_from => '', 
-		     :recipients => member,
-		     :header => header,
-		     :body => body)
+                     :mail_from => '',
+                     :recipients => member,
+                     :header => header,
+                     :body => body)
       @logger.log "[#{ml.name}]: Unsubscribe: #{member}"
     end
 
     def report_too_many_members (ml, unadded_addresses)
       header = []
       subject = Mail.encode_field(_("[QuickML] Error: %s", @mail["Subject"]))
-      header.push(["To",	@mail.from],
-		  ["From",	ml.address],
-		  ["Subject",	subject],
+      header.push(["To",        @mail.from],
+                  ["From",        ml.address],
+                  ["Subject",        subject],
                   ["Content-type", content_type])
 
       body =  _("The following addresses cannot be added because <%s> mailing list reaches the max number of members (%d persons)\n\n",
-		ml.address,
+                ml.address,
                 ml.max_members)
       unadded_addresses.each {|address|
         body << sprintf("<%s>\n", address)
@@ -820,36 +821,36 @@ module QuickML
 
       body << generate_footer
       Mail.send_mail(@config.smtp_host, @config.smtp_port, @logger,
-		     :mail_from => '', 
-		     :recipient => @mail.from,
-		     :header => header,
-		     :body => body)
+                     :mail_from => '',
+                     :recipient => @mail.from,
+                     :header => header,
+                     :body => body)
       @logger.log "[#{ml.name}]: Too Many Members: #{address}"
     end
 
     def report_invalid_mladdress (mladdress)
       header = []
       subject = Mail.encode_field(_("[QuickML] Error: %s", @mail["Subject"]))
-      header.push(["To",	@mail.from],
-		  ["From",	@config.postmaster],
-		  ["Subject",	subject],
+      header.push(["To",        @mail.from],
+                  ["From",        @config.postmaster],
+                  ["Subject",        subject],
                   ["Content-type", content_type])
 
       body =   _("Invalid mailing list name: <%s>\n", mladdress)
       body <<  _("You can only use 0-9, a-z, A-Z,  `.',  `-', and `_' for mailing list name\n")
       body << generate_footer
       Mail.send_mail(@config.smtp_host, @config.smtp_port, @logger,
-		     :mail_from => '', 
-		     :recipient => @mail.from,
-		     :header => header,
-		     :body => body)
+                     :mail_from => '',
+                     :recipient => @mail.from,
+                     :header => header,
+                     :body => body)
       @logger.log "Invalid ML Address: #{mladdress}"
     end
 
     def mail_log
       @logger.vlog "MAIL FROM:<#{@mail.mail_from}>"
       @mail.recipients.each {|recipient|
-	@logger.vlog "RCPT TO:<#{recipient}>"
+        @logger.vlog "RCPT TO:<#{recipient}>"
       }
       @logger.vlog "From: " + @mail.from
       @logger.vlog "Cc: " + @mail.collect_cc.join(", ")
@@ -859,13 +860,13 @@ module QuickML
 
     def sender_knows_an_active_member? (ml)
       @mail.collect_cc.find {|address|
-	ml.active_members.include?(address)
+        ml.active_members.include?(address)
       }
     end
 
     def add_member (ml, address)
       begin
-	ml.add_member(address)
+        ml.add_member(address)
       rescue TooManyMembers
         @unadded_addresses.push(address)
       end
@@ -881,7 +882,7 @@ module QuickML
       @unadded_addresses = []
       if ml_address_in_to?(ml)
         add_member(ml, @mail.from)
-        @mail.collect_cc.each {|address| 
+        @mail.collect_cc.each {|address|
           add_member(ml, address)
         }
       end
@@ -897,39 +898,39 @@ module QuickML
     end
 
     def unsubscribe_requested?
-      @mail.empty_body? || 
+      @mail.empty_body? ||
         (@mail.body.length < 500 &&
-         /\A\s*(unsubscribe|bye|#\s*bye|quit|Âà²ñ|Ã¦Âà)\s*$/.match(@mail.body.toeuc))
+         /\A\s*(unsubscribe|bye|#\s*bye|quit|é€€ä¼š|è„±é€€)\s*$/.match(@mail.body.toutf8))
     end
 
     def unsubscribe_self (ml)
       if ml.active_members.include?(@mail.from)
-	ml.remove_member(@mail.from)
-	report_unsubscription(ml, @mail.from)
+        ml.remove_member(@mail.from)
+        report_unsubscription(ml, @mail.from)
       else
-	report_rejection(ml)
+        report_rejection(ml)
       end
     end
 
     def unsubscribe_other (ml, cc)
       if ml.active_members.include?(@mail.from)
-	cc.each {|other|
-	  if ml.active_members.include?(other)
-	    ml.remove_member(other) 
-	    report_unsubscription(ml, other, @mail.from)
-	  end
-	}
+        cc.each {|other|
+          if ml.active_members.include?(other)
+            ml.remove_member(other)
+            report_unsubscription(ml, other, @mail.from)
+          end
+        }
       else
-	@logger.vlog "rejected"
+        @logger.vlog "rejected"
       end
     end
 
     def unsubscribe (ml)
       cc = @mail.collect_cc
       if cc.empty?
-	unsubscribe_self(ml)
+        unsubscribe_self(ml)
       else
-	unsubscribe_other(ml, cc)
+        unsubscribe_other(ml, cc)
       end
     end
 
@@ -946,16 +947,16 @@ module QuickML
 
     def submit (ml)
       if ml.exclude?(@mail.from)
-	@logger.log "Invalid From Address: #{@mail.from}"
-      elsif ml.forward? 
-	@logger.log "Forward Address: #{ml.address}"
-	ml.submit(@mail)
+        @logger.log "Invalid From Address: #{@mail.from}"
+      elsif ml.forward?
+        @logger.log "Forward Address: #{ml.address}"
+        ml.submit(@mail)
       elsif confirmation_required?(ml)
         ml.prepare_confirmation(@mail)
       elsif acceptable_submission?(ml)
-	submit_article(ml)
+        submit_article(ml)
       else
-	report_rejection(ml)
+        report_rejection(ml)
       end
     end
 
@@ -976,22 +977,22 @@ module QuickML
     def process_recipient (recipient)
       mladdress = recipient
       if to_return_address?(mladdress)
-	handler = ErrorMailHandler.new(@config, @message_charset)
-	handler.handle(@mail)
-      elsif @config.confirm_ml_creation and 
-	  to_confirmation_address?(mladdress)
+        handler = ErrorMailHandler.new(@config, @message_charset)
+        handler.handle(@mail)
+      elsif @config.confirm_ml_creation and
+            to_confirmation_address?(mladdress)
         validate_confirmation(mladdress)
       else
-	begin
-	  @config.ml_mutex(mladdress).synchronize {
-	    ml = QuickML.new(@config, mladdress, @mail.from, @message_charset)
+        begin
+          @config.ml_mutex(mladdress).synchronize {
+            ml = QuickML.new(@config, mladdress, @mail.from, @message_charset)
             @message_charset = (@message_charset or ml.charset)
-	    (unsubscribe(ml); return) if unsubscribe_requested?
-	    submit(ml)
-	  }
-	rescue InvalidMLName
-	  report_invalid_mladdress(mladdress)
-	end
+            (unsubscribe(ml); return) if unsubscribe_requested?
+            submit(ml)
+          }
+        rescue InvalidMLName
+          report_invalid_mladdress(mladdress)
+        end
       end
     end
 
@@ -999,11 +1000,11 @@ module QuickML
     def process
       mail_log
       if @mail.looping?
-	@logger.log "Looping Mail: from #{@mail.from}"
-	return
+        @logger.log "Looping Mail: from #{@mail.from}"
+        return
       end
       @mail.recipients.each {|recipient|
-	process_recipient(recipient)
+        process_recipient(recipient)
       }
     end
   end
