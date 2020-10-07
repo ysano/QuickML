@@ -1,5 +1,6 @@
-AC_INIT(quickml.in)
-AM_INIT_AUTOMAKE(quickml, 0.7)
+AC_INIT([quickml], [0.7])
+AC_CONFIG_SRCDIR([quickml.in])
+AM_INIT_AUTOMAKE
 
 AC_PROG_INSTALL
 AC_PROG_LN_S

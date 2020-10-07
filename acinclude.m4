@@ -1,4 +1,4 @@
-AC_DEFUN(AM_PATH_RUBYDIR,
+AC_DEFUN([AM_PATH_RUBYDIR],
  [dnl # 
   dnl # Check Ruby directory
   dnl #
@@ -13,7 +13,7 @@ AC_DEFUN(AM_PATH_RUBYDIR,
   AC_MSG_CHECKING([where .rb files should go])
   if test "x$rubydir" = x; then
     changequote(<<, >>)
-    rubydir=`ruby -rrbconfig -e 'puts Config::CONFIG["sitelibdir"]'`
+    rubydir=`ruby -rrbconfig -e 'puts RbConfig::CONFIG["sitelibdir"]'`
     changequote([, ])
   fi
   AC_MSG_RESULT($rubydir)
