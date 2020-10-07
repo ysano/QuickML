@@ -9,7 +9,7 @@
 # You can redistribute it and/or modify it under the terms of
 # the GNU General Public License version 2.
 #
-$KCODE='e'
+
 require 'quickml/utils'
 require 'quickml/gettext'
 

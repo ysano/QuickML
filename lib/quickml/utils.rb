@@ -8,10 +8,9 @@
 # You can redistribute it and/or modify it under the terms of
 # the GNU General Public License version 2.
 #
-$KCODE = 'e'
+
 require 'kconv'
 require 'net/smtp'
-require 'ftools'
 
 class TooLongLine < Exception; end
 class IO
