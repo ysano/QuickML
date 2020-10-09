@@ -62,7 +62,7 @@ module QuickML
       @confirm_ml_creation = (config[:confirm_ml_creation] or false)
 
       instance_variables.each {|name|
-        self.class.class_eval { attr_reader name.delete('@') }
+        self.class.class_eval { attr_reader name.to_s.delete('@') }
       }
     end
 
