@@ -11,6 +11,7 @@
 
 require 'kconv'
 require 'net/smtp'
+require 'fileutils'
 
 class TooLongLine < Exception; end
 class IO
@@ -57,6 +58,10 @@ class TCPSocket
 end
 
 class File
+  def self.safe_unlink (list, noop: nil, verbose: nil)
+    FileUtils.rm(list, force: true)
+  end
+
   def self.safe_open (filename, mode = "r")
     begin
       f = File.open(filename, mode)
