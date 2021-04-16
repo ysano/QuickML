@@ -285,7 +285,7 @@ module QuickML
       def encode_field (field)
         field.toutf8.gsub(/[　-瑤]\S*\s*/) {|x|
           x.scan(/.{1,10}/).map {|y|
-            "=?iso-2022-jp?B?" + y.tojis.to_a.pack('m').chomp + "?="
+            "=?iso-2022-jp?B?" + y.tojis.lines.to_a.pack('m').chomp + "?="
           }.join("\n ")
         }
       end
